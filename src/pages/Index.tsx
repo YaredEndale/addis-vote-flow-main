@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -17,6 +17,19 @@ const Index = () => {
 
   const [categories, setCategories] = useState<DbCategory[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.slice(1));
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, [location]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -217,7 +230,9 @@ const Index = () => {
         </div>
       </section>
 
-      <OtherEvents />
+      <div id="events" className="scroll-mt-24">
+        <OtherEvents />
+      </div>
 
       <Footer />
     </div>

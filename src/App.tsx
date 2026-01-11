@@ -13,6 +13,7 @@ import ThankYou from "./pages/ThankYou";
 import Auth from "./pages/Auth";
 import Leaderboard from "./pages/Leaderboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import DebugDashboard from "./pages/DebugDashboard";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -41,6 +42,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/debug" element={<DebugDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

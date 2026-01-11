@@ -20,8 +20,20 @@ const VotePage = () => {
   const [nominees, setNominees] = useState<DbNominee[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const category = categories.find((c) => c.id === categoryId);
-  const categoryNominees = nominees.filter((n) => n.category_id === categoryId);
+  // DEBUG LOGGING
+  useEffect(() => {
+    if (!loading) {
+      console.log("Current URL Param categoryId:", categoryId);
+      console.log("Available Categories:", categories.map(c => ({ id: c.id, name: c.name })));
+      // Loose matching with trim
+      const found = categories.find((c) => c.id.trim() === categoryId?.trim());
+      console.log("Found Category:", found);
+    }
+  }, [loading, categoryId, categories]);
+
+  // Robust matching: trim both sides
+  const category = categories.find((c) => c.id.trim() === categoryId?.trim());
+  const categoryNominees = nominees.filter((n) => n.category_id.trim() === categoryId?.trim());
   const currentVote = getVote(categoryId || "");
   const [selectedNominee, setSelectedNominee] = useState<string | null>(currentVote || null);
   const [hasConfirmed, setHasConfirmed] = useState(false);
@@ -122,7 +134,8 @@ const VotePage = () => {
     }
 
     setSubmitting(true);
-    const success = await submitVoteToDb(user.id, categoryId, selectedNominee);
+    // Use category.id to ensure we match the DB record exactly (ignoring URL whitespace issues)
+    const success = await submitVoteToDb(user.id, category.id, selectedNominee);
     setSubmitting(false);
 
     if (success) {
@@ -182,8 +195,8 @@ const VotePage = () => {
             {categories.map((cat, index) => (
               <Link
                 key={cat.id}
-                to={`/vote/${cat.id}`}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${cat.id === categoryId
+                to={`/vote/${cat.id.trim()}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300 ${cat.id.trim() === categoryId?.trim()
                   ? "bg-primary text-primary-foreground shadow-glow"
                   : votedCategories.includes(cat.id)
                     ? "bg-primary/20 text-primary"
@@ -191,7 +204,7 @@ const VotePage = () => {
                   }`}
                 title={cat.name}
               >
-                {votedCategories.includes(cat.id) && cat.id !== categoryId ? (
+                {votedCategories.includes(cat.id) && cat.id.trim() !== categoryId?.trim() ? (
                   <Check className="w-3 h-3" />
                 ) : (
                   index + 1

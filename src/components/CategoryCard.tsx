@@ -10,7 +10,7 @@ interface CategoryCardProps {
 
 const CategoryCard = ({ category, hasVoted = false }: CategoryCardProps) => {
   return (
-    <Link to={`/vote/${category.id}`}>
+    <Link to={`/vote/${category.id.trim()}`}>
       <Card variant="category" className="h-full group cursor-pointer relative overflow-hidden">
         {hasVoted && (
           <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-glow z-10">

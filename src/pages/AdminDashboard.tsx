@@ -10,8 +10,9 @@ import { fetchAllVotes, fetchCategories, fetchNominees, Vote, DbCategory, DbNomi
 import VoteStats from "@/components/admin/VoteStats";
 import CategoryManager from "@/components/admin/CategoryManager";
 import NomineeManager from "@/components/admin/NomineeManager";
+import EventManager from "@/components/admin/EventManager";
 import ReservationList from "@/components/admin/ReservationList";
-import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket } from "lucide-react";
+import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar } from "lucide-react";
 
 const AdminDashboard = () => {
     const { user, loading: authLoading } = useAuth();
@@ -84,11 +85,12 @@ const AdminDashboard = () => {
                     </div>
 
                     <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-6">
-                        <TabsList className="bg-card/50 border border-white/10">
+                        <TabsList className="bg-card/50 border border-white/10 flex-wrap h-auto">
                             <TabsTrigger value="dashboard" className="gap-2"><BarChart3 size={16} /> Dashboard</TabsTrigger>
-                            <TabsTrigger value="categories" className="gap-2"><Settings2 size={16} /> Manage Categories</TabsTrigger>
-                            <TabsTrigger value="nominees" className="gap-2"><Users size={16} /> Manage Nominees</TabsTrigger>
+                            <TabsTrigger value="categories" className="gap-2"><Settings2 size={16} /> Categories</TabsTrigger>
+                            <TabsTrigger value="nominees" className="gap-2"><Users size={16} /> Nominees</TabsTrigger>
                             <TabsTrigger value="reservations" className="gap-2"><Ticket size={16} /> Reservations</TabsTrigger>
+                            <TabsTrigger value="events" className="gap-2"><Calendar size={16} /> Events</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="dashboard" className="animate-fade-in space-y-8">
@@ -152,6 +154,12 @@ const AdminDashboard = () => {
                             <div className="bg-card/30 border border-white/10 rounded-xl p-6">
                                 <h2 className="text-xl font-display mb-6">Event Reservations</h2>
                                 <ReservationList />
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="events" className="animate-fade-in">
+                            <div className="bg-card/30 border border-white/10 rounded-xl p-6">
+                                <EventManager />
                             </div>
                         </TabsContent>
                     </Tabs>

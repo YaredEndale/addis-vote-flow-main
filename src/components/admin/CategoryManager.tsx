@@ -171,7 +171,7 @@ const CategoryManager = () => {
                             <Input
                                 id="id"
                                 value={formData.id}
-                                onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, id: e.target.value.trim() })}
                                 disabled={!!editingCategory}
                                 placeholder="slug-format"
                             />

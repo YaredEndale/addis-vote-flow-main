@@ -8,7 +8,13 @@ interface VotingProgressProps {
 
 const VotingProgress = ({ votedCategories, categories }: VotingProgressProps) => {
   const totalCategories = categories.length;
-  const votedCount = votedCategories.length;
+
+  // Calculate voted count by checking how many VALID categories have a vote
+  // This handles duplicate keys (trimmed vs untrimmed) in the store
+  const votedCount = categories.filter(c =>
+    votedCategories.some(vId => vId.trim() === c.id.trim())
+  ).length;
+
   const progressPercentage = totalCategories > 0 ? (votedCount / totalCategories) * 100 : 0;
 
   return (
@@ -31,13 +37,13 @@ const VotingProgress = ({ votedCategories, categories }: VotingProgressProps) =>
       {/* Category Pills */}
       <div className="flex flex-wrap gap-2">
         {categories.map((category) => {
-          const hasVoted = votedCategories.includes(category.id);
+          const hasVoted = votedCategories.some(vId => vId.trim() === category.id.trim());
           return (
             <div
               key={category.id}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${hasVoted
-                  ? "bg-accent/20 text-accent border border-accent/30"
-                  : "bg-muted/50 text-muted-foreground border border-border/50"
+                ? "bg-accent/20 text-accent border border-accent/30"
+                : "bg-muted/50 text-muted-foreground border border-border/50"
                 }`}
             >
               {hasVoted && <Check className="w-3 h-3" />}

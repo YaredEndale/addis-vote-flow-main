@@ -14,6 +14,7 @@ const Header = () => {
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/categories", label: "Categories" },
+    { path: "/#events", label: "Schedule" },
     { path: "/leaderboard", label: "Leaderboard" },
     { path: "/rules", label: "Rules" },
   ];
@@ -21,9 +22,11 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const handleSignOut = async () => {
+    localStorage.removeItem("agw-reservations");
     await signOut();
     toast.success("Signed out successfully");
     navigate("/");
+    window.location.reload(); // Ensure all states are reset
   };
 
   return (

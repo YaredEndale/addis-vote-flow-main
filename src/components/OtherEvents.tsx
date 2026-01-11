@@ -1,5 +1,5 @@
 
-import { Calendar, MapPin, Clock, Info, Ticket, X, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Clock, Info, Ticket, X, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
 import { createReservation } from "@/services/reservationService";
+import { fetchEvents, DbEvent } from "@/services/eventService";
+import { useEffect } from "react";
 
 interface TimelineEvent {
     time?: string;
@@ -43,8 +45,17 @@ const OtherEvents = () => {
     const [userName, setUserName] = useState("");
     const [contactInfo, setContactInfo] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [reservedEvents, setReservedEvents] = useState<string[]>([]);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("agw-reservations");
+        if (stored) {
+            setReservedEvents(JSON.parse(stored));
+        }
+    }, []);
 
     const handleReserve = (eventTitle: string) => {
+        if (reservedEvents.includes(eventTitle)) return;
         setSelectedEvent(eventTitle);
         setOpen(true);
     };
@@ -62,6 +73,12 @@ const OtherEvents = () => {
 
         if (success) {
             toast.success("Spot reserved successfully!");
+
+            // Update local state and storage
+            const newReserved = [...reservedEvents, selectedEvent];
+            setReservedEvents(newReserved);
+            localStorage.setItem("agw-reservations", JSON.stringify(newReserved));
+
             setOpen(false);
             setUserName("");
             setContactInfo("");
@@ -70,120 +87,59 @@ const OtherEvents = () => {
         }
     };
 
-    const schedule: TimelinePhase[] = [
-        {
-            title: "Pre-Event",
-            days: [
-                {
-                    day: "Monday",
-                    events: [
-                        {
-                            title: "Award Voting Opens (Public)",
-                            reservable: false
-                        }
-                    ]
-                },
-                {
-                    day: "Wednesday",
-                    date: "Jan 21",
-                    events: [
-                        {
-                            time: "7:00 PM – 9:00 PM",
-                            title: "Soft Launch (Online)",
-                            speakers: "Led by: Yared, Jo, Freadam",
-                            reservable: true
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            title: "On-Event",
-            days: [
-                {
-                    day: "Friday",
-                    date: "Jan 24",
-                    venue: "Tentative Venue: Creative Hub",
-                    events: [
-                        {
-                            time: "5:00 PM – 6:00 PM",
-                            title: "Official Opening & Keynotes",
-                            reservable: true
-                        },
-                        {
-                            time: "6:00 PM – 6:30 PM",
-                            title: "Addis Games Week Game Jam Kick-off",
-                            reservable: true
-                        },
-                        {
-                            time: "6:30 PM – 8:00 PM",
-                            title: "Expo & Job Fair",
-                            description: "Brat’s Memorial Product Showcase",
-                            reservable: true
-                        }
-                    ]
-                },
-                {
-                    day: "Saturday",
-                    date: "Jan 25",
-                    venue: "Tentative Venue: Creative Hub or Alliance Ethio-France",
-                    events: [
-                        {
-                            time: "2:00 PM – 3:30 PM",
-                            title: "Talk Esports – Esports as a Career",
-                            speakers: "Emmanuel, Emmanuel, Cloud Bura, EDI / Ministry of Sport & Culture, Alliance, Bernard (Canada)",
-                            reservable: true
-                        },
-                        {
-                            time: "3:45 PM – 5:00 PM",
-                            title: "Games for Change vs Entertainment (Fireside Chat)",
-                            speakers: "Dagmawi, Jo, Bruke",
-                            reservable: true
-                        },
-                        {
-                            time: "5:30 PM – 7:00 PM",
-                            title: "The Future of Learning – Extended Reality",
-                            speakers: "Oliyad & Dani",
-                            reservable: true
-                        },
-                        {
-                            time: "7:00 PM – 9:00 PM",
-                            title: "Press & Play – Free Game Day",
-                            reservable: true
-                        }
-                    ]
-                },
-                {
-                    day: "Sunday",
-                    date: "Jan 26",
-                    venue: "Tentative Venue: Creative Hub or Alliance Ethio-France",
-                    events: [
-                        {
-                            time: "9:30 PM – 11:30 PM",
-                            title: "Masterclass 01 – Game Development Studios as a Business",
-                            reservable: true
-                        },
-                        {
-                            time: "12:00 AM – 2:00 AM",
-                            title: "Masterclass 02 – Tournament Organization & Streaming Production",
-                            speakers: "Emmanuel & Kidus / Qkwecy",
-                            reservable: true
-                        },
-                        {
-                            time: "2:00 AM – 2:30 AM",
-                            title: "Game Jam Closing",
-                            reservable: true
-                        },
-                        {
-                            time: "3:00 AM – 6:00 AM",
-                            title: "Award Ceremony",
-                            reservable: true
-                        }
-                    ]
-                }
-            ]
-        }
-    ];
+    const [events, setEvents] = useState<DbEvent[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadEvents = async () => {
+            setLoading(true);
+            const data = await fetchEvents();
+            setEvents(data);
+            setLoading(false);
+        };
+        loadEvents();
+    }, []);
+
+    // Group events by phase -> day
+    const getSchedule = (): TimelinePhase[] => {
+        const phases: Record<string, TimelinePhase> = {
+            "Pre-Event": { title: "Pre-Event", days: [] },
+            "On-Event": { title: "On-Event", days: [] }
+        };
+
+        const daysMap: Record<string, TimelineDay> = {};
+
+        events.forEach(event => {
+            const phaseKey = event.phase === "Pre-Event" ? "Pre-Event" : "On-Event";
+            const dayKey = `${phaseKey}-${event.day_label}`;
+
+            if (!daysMap[dayKey]) {
+                daysMap[dayKey] = {
+                    day: event.day_label,
+                    // Typically 'date' and 'venue' might be on the day level, but we store flat.
+                    // We'll take the first one or just display at event level if structure varies.
+                    // For now, let's assume day_label is unique per phase.
+                    // To match existing UI, we might need 'date' extracted if day_label is just "Friday"
+                    // But your schema has day_label as "Friday" or "Jan 21". 
+                    // Let's just use day_label as the primary display.
+                    events: []
+                };
+                phases[phaseKey].days.push(daysMap[dayKey]);
+            }
+
+            daysMap[dayKey].events.push({
+                time: event.start_time ? `${event.start_time}${event.end_time ? ' – ' + event.end_time : ''}` : undefined,
+                title: event.title,
+                description: event.description,
+                speakers: event.speakers,
+                reservable: event.reservable
+            });
+        });
+
+        return [phases["Pre-Event"], phases["On-Event"]].filter(p => p.days.length > 0);
+    };
+
+    const schedule = getSchedule();
 
     return (
         <section className="py-20 px-4 relative overflow-hidden" id="events-calendar">
@@ -273,16 +229,29 @@ const OtherEvents = () => {
                                                                             <span>{event.speakers}</span>
                                                                         </div>
                                                                     )}
-
+                                                                    {/* Reservation Button - Only for future events */}
                                                                     {event.reservable && (
-                                                                        <div className="mt-4 flex justify-end">
+                                                                        <div className="mt-4 pt-4 border-t border-white/5">
                                                                             <Button
                                                                                 size="sm"
-                                                                                className="gap-2 bg-primary/20 hover:bg-primary text-primary hover:text-primary-foreground border-primary/20"
+                                                                                className={`w-full gap-2 ${reservedEvents.includes(event.title)
+                                                                                        ? "bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 cursor-default opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                                                                                        : "shadow-glow hover:scale-105 transition-transform"
+                                                                                    }`}
                                                                                 onClick={() => handleReserve(event.title)}
+                                                                                disabled={reservedEvents.includes(event.title)}
                                                                             >
-                                                                                <Ticket className="w-4 h-4" />
-                                                                                Reserve Spot
+                                                                                {reservedEvents.includes(event.title) ? (
+                                                                                    <>
+                                                                                        <Check className="w-4 h-4" />
+                                                                                        Reserved
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Ticket className="w-4 h-4" />
+                                                                                        Reserve Spot
+                                                                                    </>
+                                                                                )}
                                                                             </Button>
                                                                         </div>
                                                                     )}
