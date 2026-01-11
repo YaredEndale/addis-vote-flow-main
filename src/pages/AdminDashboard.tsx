@@ -25,12 +25,6 @@ const AdminDashboard = () => {
     // Dashboard, Categories, Nominees
     const [activeMainTab, setActiveMainTab] = useState("dashboard");
 
-    useEffect(() => {
-        if (!authLoading && !user) {
-            navigate("/auth");
-        }
-    }, [user, authLoading, navigate]);
-
     const loadData = async () => {
         setLoading(true);
         const [votesData, categoriesData, nomineesData] = await Promise.all([

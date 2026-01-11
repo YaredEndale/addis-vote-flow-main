@@ -35,7 +35,7 @@ const Header = () => {
             <div className="w-12 h-12 flex items-center justify-center p-1 relative">
               <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all rounded-full" />
               <img
-                src="/logo.png"
+                src="/logo-icon.png"
                 alt="Addis Games Week Logo"
                 className="w-full h-full object-contain relative z-10 animate-float-slow"
                 onError={(e) => {
@@ -50,7 +50,7 @@ const Header = () => {
                 ADDIS GAMES WEEK
               </span>
               <span className="text-[10px] text-muted-foreground tracking-widest uppercase">
-                Awards 2024
+                Awards 2026
               </span>
             </div>
           </Link>

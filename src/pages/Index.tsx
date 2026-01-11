@@ -28,7 +28,7 @@ const Index = () => {
   }, []);
 
   // Set voting deadline to January 25, 2026 (adjust timezone)
-  const votingDeadline = new Date(2026, 1, 25, 23, 59, 59);
+  const votingDeadline = new Date(2026, 0, 25, 23, 59, 59);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-dark">
