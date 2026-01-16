@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -74,6 +74,31 @@ const VotePage = () => {
       setHasConfirmed(true);
     }
   }, [categoryId, getVote]);
+
+  // Handle Share Link (Auto-select nominee from URL)
+  const [searchParams] = useSearchParams();
+  const nomineeParam = searchParams.get("nominee");
+
+  useEffect(() => {
+    if (nomineeParam && !selectedNominee && !hasConfirmed && nominees.length > 0) {
+      // Verify if nominee exists in this category
+      const exists = nominees.find(n => n.id === nomineeParam && n.category_id.trim() === categoryId?.trim());
+
+      if (exists) {
+        console.log("Auto-selecting nominee from URL:", nomineeParam);
+        setSelectedNominee(nomineeParam);
+
+        // Scroll to nominee after a short delay to ensure rendering
+        setTimeout(() => {
+          const element = document.getElementById(`nominee-${nomineeParam}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add a temporary highlight effect class if needed, or just rely on the selection state
+          }
+        }, 500);
+      }
+    }
+  }, [nomineeParam, nominees, categoryId, selectedNominee, hasConfirmed]);
 
   // Navigation helpers
   const currentIndex = categories.findIndex((c) => c.id === categoryId);
@@ -218,6 +243,7 @@ const VotePage = () => {
             {categoryNominees.map((nominee, index) => (
               <div
                 key={nominee.id}
+                id={`nominee-${nominee.id}`}
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
@@ -225,6 +251,7 @@ const VotePage = () => {
                   nominee={nominee}
                   isSelected={selectedNominee === nominee.id}
                   onVote={handleVote}
+                  categoryId={category.id}
                 />
               </div>
             ))}
