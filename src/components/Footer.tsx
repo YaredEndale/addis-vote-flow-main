@@ -13,7 +13,7 @@ const Footer = () => {
                 <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all rounded-full" />
                 <img
                   src="/logo.png"
-                  alt="Addis Games Week Logo"
+                  alt="addisgamesweek Logo"
                   className="w-full h-full object-contain relative z-10 animate-float-slow"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -23,7 +23,7 @@ const Footer = () => {
                 <Trophy className="logo-fallback hidden w-5 h-5 text-primary absolute z-10" />
               </div>
               <div className="flex flex-col">
-                <span className="font-display text-lg tracking-wider text-foreground">ADDIS GAMES WEEK</span>
+                <span className="font-display text-lg tracking-wider text-foreground">addisgamesweek</span>
                 <span className="text-[10px] text-muted-foreground tracking-widest uppercase">
                   Awards 2026
                 </span>
@@ -68,7 +68,7 @@ const Footer = () => {
 
         <div className="border-t border-border/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            © 2026 Addis Games Week. All rights reserved.
+            © 2026 addisgamesweek. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <Link to="/rules" className="text-xs text-muted-foreground hover:text-foreground transition-colors">

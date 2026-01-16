@@ -90,7 +90,7 @@ const Index = () => {
 
             {/* Main Title */}
             <h1 className="font-display text-5xl md:text-7xl lg:text-8xl tracking-wider mb-6 leading-tight">
-              ADDIS GAMES WEEK
+              addisgamesweek
               <span className="block text-gradient-cyan mt-2">AWARDS 2026</span>
             </h1>
 

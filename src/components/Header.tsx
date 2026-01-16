@@ -39,7 +39,7 @@ const Header = () => {
               <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all rounded-full" />
               <img
                 src="/logo-icon.png"
-                alt="Addis Games Week Logo"
+                alt="addisgamesweek Logo"
                 className="w-full h-full object-contain relative z-10 animate-float-slow"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -50,7 +50,7 @@ const Header = () => {
             </div>
             <div className="flex flex-col">
               <span className="font-display text-lg md:text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
-                ADDIS GAMES WEEK
+                addisgamesweek
               </span>
               <span className="text-[10px] text-muted-foreground tracking-widest uppercase">
                 Awards 2026
