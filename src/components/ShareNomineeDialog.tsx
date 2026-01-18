@@ -45,7 +45,7 @@ const ShareNomineeDialog = ({
         }
     };
 
-    const shareText = `Vote for ${nomineeName} at addisgamesweek!`;
+    const shareText = `Vote for ${nomineeName} at Addis Games Week!`;
     const encodedUrl = encodeURIComponent(shareUrl);
     const encodedText = encodeURIComponent(shareText);
 

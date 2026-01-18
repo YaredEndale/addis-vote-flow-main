@@ -39,7 +39,7 @@ const Header = () => {
               <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all rounded-full" />
               <img
                 src="/logo-icon.png"
-                alt="addisgamesweek Logo"
+                alt="Addis Games Week Logo"
                 className="w-full h-full object-contain relative z-10 animate-float-slow"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -50,7 +50,7 @@ const Header = () => {
             </div>
             <div className="flex flex-col">
               <span className="font-display text-lg md:text-xl tracking-wider text-foreground group-hover:text-primary transition-colors">
-                addisgamesweek
+                Addis Games Week
               </span>
               <span className="text-[10px] text-muted-foreground tracking-widest uppercase">
                 Awards 2026
@@ -107,53 +107,55 @@ const Header = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border/50 animate-fade-in">
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`text-base font-medium py-2 transition-colors duration-300 ${isActive(link.path)
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                    }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+        {
+          mobileMenuOpen && (
+            <nav className="md:hidden py-4 border-t border-border/50 animate-fade-in">
+              <div className="flex flex-col gap-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`text-base font-medium py-2 transition-colors duration-300 ${isActive(link.path)
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
 
-              {user ? (
-                <>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                    <User className="w-4 h-4" />
-                    <span className="truncate">{user.email}</span>
-                  </div>
-                  <Button variant="outline" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" asChild>
-                    <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                      Sign In
-                    </Link>
-                  </Button>
-                  <Button variant="hero" asChild className="mt-2">
-                    <Link to="/categories" onClick={() => setMobileMenuOpen(false)}>
-                      Vote Now
-                    </Link>
-                  </Button>
-                </>
-              )}
-            </div>
-          </nav>
-        )}
-      </div>
-    </header>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+                      <User className="w-4 h-4" />
+                      <span className="truncate">{user.email}</span>
+                    </div>
+                    <Button variant="outline" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" asChild>
+                      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
+                        Sign In
+                      </Link>
+                    </Button>
+                    <Button variant="hero" asChild className="mt-2">
+                      <Link to="/categories" onClick={() => setMobileMenuOpen(false)}>
+                        Vote Now
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </nav>
+          )
+        }
+      </div >
+    </header >
   );
 };
 
