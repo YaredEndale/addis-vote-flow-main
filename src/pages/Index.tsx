@@ -10,6 +10,8 @@ import { fetchCategories, DbCategory } from "@/services/votingService";
 import { ArrowRight, Shield, Users, Trophy, Clock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import heroBg from "@/assets/hero-bg.jpg";
+import SponsorsSection from "@/components/SponsorsSection";
+import OrganizersSection from "@/components/OrganizersSection";
 
 const Index = () => {
   const getVotedCategories = useVotingStore((state) => state.getVotedCategories);
@@ -184,6 +186,11 @@ const Index = () => {
         </div>
       </section>
 
+
+
+      {/* Sponsors Section */}
+      <SponsorsSection />
+
       {/* Categories Preview */}
       <section className="py-20 px-4 bg-secondary/20">
         <div className="container mx-auto">
@@ -233,6 +240,9 @@ const Index = () => {
       <div id="events" className="scroll-mt-24">
         <OtherEvents />
       </div>
+
+      {/* Organizers Section */}
+      <OrganizersSection />
 
       <Footer />
     </div>
