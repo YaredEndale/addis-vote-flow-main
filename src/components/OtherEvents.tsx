@@ -31,6 +31,7 @@ interface TimelineDay {
     day: string;
     date?: string;
     venue?: string;
+    sortDate?: string;
     events: TimelineEvent[];
 }
 
@@ -114,14 +115,19 @@ const OtherEvents = () => {
             const dayKey = `${phaseKey}-${event.day_label}`;
 
             if (!daysMap[dayKey]) {
+                // Try to find a sortable date
+                let sortDate = event.event_date || "";
+                if (!sortDate) {
+                    // Try to parse day_label if it looks like a date e.g. "Jan 21"
+                    const parsed = Date.parse(event.day_label + " " + new Date().getFullYear());
+                    if (!isNaN(parsed)) {
+                        sortDate = new Date(parsed).toISOString();
+                    }
+                }
+
                 daysMap[dayKey] = {
                     day: event.day_label,
-                    // Typically 'date' and 'venue' might be on the day level, but we store flat.
-                    // We'll take the first one or just display at event level if structure varies.
-                    // For now, let's assume day_label is unique per phase.
-                    // To match existing UI, we might need 'date' extracted if day_label is just "Friday"
-                    // But your schema has day_label as "Friday" or "Jan 21". 
-                    // Let's just use day_label as the primary display.
+                    sortDate: sortDate,
                     events: []
                 };
                 phases[phaseKey].days.push(daysMap[dayKey]);
@@ -133,6 +139,47 @@ const OtherEvents = () => {
                 description: event.description,
                 speakers: event.speakers,
                 reservable: event.reservable
+            });
+        });
+
+        // Helper to parse time string like "5:00 PM" to minutes
+        const parseTime = (timeStr?: string): number => {
+            if (!timeStr) return 9999; // Late if no time
+            try {
+                // Extract "5:00 PM" from "5:00 PM - 6:00 PM" or "5:00 PM – 6:00 PM"
+                // Normalize dashes
+                const firstPart = timeStr.replace('–', '-').split('-')[0].trim();
+                const parts = firstPart.match(/(\d+):?(\d+)?\s*(AM|PM)/i);
+
+                if (parts) {
+                    let [_, hoursStr, minutesStr, modifier] = parts;
+                    let hours = parseInt(hoursStr, 10);
+                    let minutes = minutesStr ? parseInt(minutesStr, 10) : 0;
+
+                    if (modifier.toUpperCase() === 'PM' && hours < 12) hours += 12;
+                    if (modifier.toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+                    return hours * 60 + minutes;
+                }
+                return 9999;
+            } catch (e) {
+                return 9999;
+            }
+        };
+
+        // Sort days within phases and events within days
+        Object.values(phases).forEach(phase => {
+            phase.days.sort((a, b) => {
+                if (a.sortDate && b.sortDate) {
+                    return a.sortDate.localeCompare(b.sortDate);
+                }
+                // Fallback: maintain original order or sort by day label string
+                return 0;
+            });
+
+            // Sort events within each day by time
+            phase.days.forEach(day => {
+                day.events.sort((a, b) => parseTime(a.time) - parseTime(b.time));
             });
         });
 
@@ -235,8 +282,8 @@ const OtherEvents = () => {
                                                                             <Button
                                                                                 size="sm"
                                                                                 className={`w-full gap-2 ${reservedEvents.includes(event.title)
-                                                                                        ? "bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 cursor-default opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                                                                                        : "shadow-glow hover:scale-105 transition-transform"
+                                                                                    ? "bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-500 cursor-default opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                                                                                    : "shadow-glow hover:scale-105 transition-transform"
                                                                                     }`}
                                                                                 onClick={() => handleReserve(event.title)}
                                                                                 disabled={reservedEvents.includes(event.title)}

@@ -22,14 +22,25 @@ export type EventUpdate = Partial<Omit<DbEvent, "created_at">>;
 
 // Using 'any' cast for table name until types are generated
 export const fetchEvents = async (): Promise<DbEvent[]> => {
+    // Attempt to fetch sorted by event_date
     const { data, error } = await (supabase
         .from("events" as any)
         .select("*")
         .order("event_date", { ascending: true })) as any;
 
     if (error) {
-        console.error("Error fetching events:", error);
-        return [];
+        console.warn("Primary fetch failed (likely missing event_date), falling back to created_at sort:", error);
+
+        const { data: fallbackData, error: fallbackError } = await (supabase
+            .from("events" as any)
+            .select("*")
+            .order("created_at", { ascending: true })) as any;
+
+        if (fallbackError) {
+            console.error("Error fetching events:", fallbackError);
+            return [];
+        }
+        return fallbackData as DbEvent[];
     }
 
     return data as DbEvent[];
@@ -41,6 +52,29 @@ export const createEvent = async (event: NewEvent): Promise<{ success: boolean; 
         .insert([event])) as any;
 
     if (error) {
+        // Check if error is due to missing column
+        if (error.message && error.message.includes('measure to find the')) {
+            // supabase-js sometimes gives generic errors, but usually "Could not find the 'event_date' column"
+            // We'll check for the specific string or retry on any error if it looks like a schema issue?
+            // Safer to check string if possible, but the error message format is "Could not find the 'event_date' column..." inside the error object
+        }
+
+        if (error.message && (error.message.includes("Could not find the") || error.code === "PGRST204")) {
+            console.warn("Primary create failed (likely missing event_date), retrying without it:", error);
+            // Create a copy without event_date
+            const { event_date, ...eventWithoutDate } = event;
+
+            const { error: retryError } = await (supabase
+                .from("events" as any)
+                .insert([eventWithoutDate])) as any;
+
+            if (retryError) {
+                console.error("Error creating event (retry failed):", retryError);
+                return { success: false, error: retryError.message };
+            }
+            return { success: true };
+        }
+
         console.error("Error creating event:", error);
         return { success: false, error: error.message };
     }
@@ -55,6 +89,22 @@ export const updateEvent = async (id: string, updates: EventUpdate): Promise<{ s
         .eq("id", id)) as any;
 
     if (error) {
+        if (error.message && (error.message.includes("Could not find the") || error.code === "PGRST204")) {
+            console.warn("Primary update failed (likely missing event_date), retrying without it:", error);
+            const { event_date, ...updatesWithoutDate } = updates;
+
+            const { error: retryError } = await (supabase
+                .from("events" as any)
+                .update(updatesWithoutDate)
+                .eq("id", id)) as any;
+
+            if (retryError) {
+                console.error("Error updating event (retry failed):", retryError);
+                return { success: false, error: retryError.message };
+            }
+            return { success: true };
+        }
+
         console.error("Error updating event:", error);
         return { success: false, error: error.message };
     }
