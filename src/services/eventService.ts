@@ -12,6 +12,7 @@ export interface DbEvent {
     reservable: boolean;
     phase: "Pre-Event" | "On-Event";
     day_label: string; // e.g. "Monday", "Jan 21"
+    event_date: string; // ISO date string YYYY-MM-DD for sorting
     created_at: string;
 }
 
@@ -24,7 +25,7 @@ export const fetchEvents = async (): Promise<DbEvent[]> => {
     const { data, error } = await (supabase
         .from("events" as any)
         .select("*")
-        .order("created_at", { ascending: true })) as any;
+        .order("event_date", { ascending: true })) as any;
 
     if (error) {
         console.error("Error fetching events:", error);

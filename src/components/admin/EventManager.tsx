@@ -47,7 +47,8 @@ const EventManager = () => {
         start_time: "",
         end_time: "",
         venue: "",
-        speakers: ""
+        speakers: "",
+        event_date: ""
     });
 
     const loadEvents = async () => {
@@ -71,7 +72,8 @@ const EventManager = () => {
             start_time: "",
             end_time: "",
             venue: "",
-            speakers: ""
+            speakers: "",
+            event_date: ""
         });
         setEditingEvent(null);
     };
@@ -87,7 +89,8 @@ const EventManager = () => {
             start_time: event.start_time || "",
             end_time: event.end_time || "",
             venue: event.venue || "",
-            speakers: event.speakers || ""
+            speakers: event.speakers || "",
+            event_date: event.event_date || ""
         });
         setIsDialogOpen(true);
     };
@@ -185,6 +188,17 @@ const EventManager = () => {
                             </div>
 
                             <div className="space-y-2">
+                                <Label>Event Date (Sort Order)</Label>
+                                <Input
+                                    type="date"
+                                    value={formData.event_date || ""}
+                                    onChange={e => setFormData({ ...formData, event_date: e.target.value })}
+                                    required
+                                    className="bg-secondary/50 border-white/10"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label>Event Title</Label>
                                 <Input
                                     value={formData.title}
@@ -275,6 +289,7 @@ const EventManager = () => {
                         <TableHeader className="bg-card">
                             <TableRow className="border-white/10 hover:bg-white/5">
                                 <TableHead>Phase</TableHead>
+                                <TableHead>Date</TableHead>
                                 <TableHead>Day</TableHead>
                                 <TableHead>Title</TableHead>
                                 <TableHead>Actions</TableHead>
@@ -291,6 +306,7 @@ const EventManager = () => {
                                 events.map((event) => (
                                     <TableRow key={event.id} className="border-white/10 hover:bg-white/5">
                                         <TableCell className="font-medium">{event.phase}</TableCell>
+                                        <TableCell>{event.event_date}</TableCell>
                                         <TableCell>{event.day_label}</TableCell>
                                         <TableCell>{event.title}</TableCell>
                                         <TableCell>
