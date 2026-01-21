@@ -73,18 +73,39 @@ export const submitVote = async (
 };
 
 export const fetchAllVotes = async (): Promise<Vote[]> => {
-  // Increase limit to prevent capping at 1000
-  const { data, error } = await supabase
-    .from("votes")
-    .select("*")
-    .range(0, 99999);
+  let allVotes: Vote[] = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
 
-  if (error) {
-    console.error("Error fetching all votes:", error);
-    return [];
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from("votes")
+      .select("*")
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) {
+      console.error("Error fetching votes page", page, error);
+      // If we already have data, return what we have to avoid breaking UI completely
+      // or break to stop trying
+      break;
+    }
+
+    if (data) {
+      allVotes = [...allVotes, ...(data as Vote[])];
+
+      // If we got fewer results than requested, we've reached the end
+      if (data.length < pageSize) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    } else {
+      hasMore = false;
+    }
   }
 
-  return data as Vote[];
+  return allVotes;
 };
 
 // --- Categories CRUD ---
@@ -187,19 +208,39 @@ export interface LeaderboardEntry {
 }
 
 export const fetchVoteCounts = async (): Promise<LeaderboardEntry[]> => {
-  const { data, error } = await supabase
-    .from("votes")
-    .select("category_id, nominee_id")
-    .range(0, 99999);
+  let allVotes: { category_id: string; nominee_id: string }[] = [];
+  let page = 0;
+  const pageSize = 1000;
+  let hasMore = true;
 
-  if (error) {
-    console.error("Error fetching vote counts:", error);
-    return [];
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from("votes")
+      .select("category_id, nominee_id")
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) {
+      console.error("Error fetching vote counts page", page, error);
+      break;
+    }
+
+    if (data) {
+      // Cast data to expected shape since we only selected specific fields
+      allVotes = [...allVotes, ...data];
+
+      if (data.length < pageSize) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    } else {
+      hasMore = false;
+    }
   }
 
-  // Aggregate counts in frontend for simplicity and speed (avoids complex SQL views for now)
+  // Aggregate counts in frontend
   const counts: Record<string, number> = {};
-  data.forEach((v) => {
+  allVotes.forEach((v) => {
     const key = `${v.category_id}|${v.nominee_id}`;
     counts[key] = (counts[key] || 0) + 1;
   });
