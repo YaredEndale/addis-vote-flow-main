@@ -73,9 +73,11 @@ export const submitVote = async (
 };
 
 export const fetchAllVotes = async (): Promise<Vote[]> => {
+  // Increase limit to prevent capping at 1000
   const { data, error } = await supabase
     .from("votes")
-    .select("*");
+    .select("*")
+    .range(0, 99999);
 
   if (error) {
     console.error("Error fetching all votes:", error);
@@ -187,7 +189,8 @@ export interface LeaderboardEntry {
 export const fetchVoteCounts = async (): Promise<LeaderboardEntry[]> => {
   const { data, error } = await supabase
     .from("votes")
-    .select("category_id, nominee_id");
+    .select("category_id, nominee_id")
+    .range(0, 99999);
 
   if (error) {
     console.error("Error fetching vote counts:", error);
