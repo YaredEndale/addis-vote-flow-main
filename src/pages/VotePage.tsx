@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NomineeCard from "@/components/NomineeCard";
@@ -158,6 +159,7 @@ const VotePage = () => {
       return;
     }
 
+
     setSubmitting(true);
     // Use category.id to ensure we match the DB record exactly (ignoring URL whitespace issues)
     const success = await submitVoteToDb(user.id, category.id, selectedNominee);
@@ -203,6 +205,7 @@ const VotePage = () => {
               </Button>
             </div>
           )}
+
 
           {/* Category Header */}
           <div className="text-center mb-12 animate-slide-up">

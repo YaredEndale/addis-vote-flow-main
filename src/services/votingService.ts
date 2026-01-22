@@ -9,6 +9,18 @@ export interface Vote {
   updated_at: string;
 }
 
+export interface DetailedVote extends Vote {
+  profiles: {
+    email: string;
+  };
+  categories: {
+    name: string;
+  };
+  nominees: {
+    name: string;
+  };
+}
+
 export const fetchUserVotes = async (userId: string): Promise<Record<string, string>> => {
   const { data, error } = await supabase
     .from("votes")
@@ -249,4 +261,24 @@ export const fetchVoteCounts = async (): Promise<LeaderboardEntry[]> => {
     const [category_id, nominee_id] = key.split("|");
     return { category_id, nominee_id, vote_count: count };
   });
+};
+
+export const fetchDetailedVotes = async (): Promise<DetailedVote[]> => {
+  const { data, error } = await supabase
+    .from("votes")
+    .select(`
+      *,
+      profiles:user_id (email),
+      categories:category_id (name),
+      nominees:nominee_id (name)
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching detailed votes:", error);
+    return [];
+  }
+
+  // We need to manually handle the join result because of Supabase's type system
+  return data as unknown as DetailedVote[];
 };

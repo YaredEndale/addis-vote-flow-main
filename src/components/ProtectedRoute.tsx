@@ -32,6 +32,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
         return <Navigate to="/auth" state={{ from: location }} replace />;
     }
 
+
     if (requireAdmin && user.email) {
         // Debugging logs
         console.log("Current user:", user.email);

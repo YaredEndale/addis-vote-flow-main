@@ -12,7 +12,8 @@ import CategoryManager from "@/components/admin/CategoryManager";
 import NomineeManager from "@/components/admin/NomineeManager";
 import EventManager from "@/components/admin/EventManager";
 import ReservationList from "@/components/admin/ReservationList";
-import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar } from "lucide-react";
+import VoteAuditList from "@/components/admin/VoteAuditList";
+import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar, ListChecks } from "lucide-react";
 
 const AdminDashboard = () => {
     const { user, loading: authLoading } = useAuth();
@@ -91,6 +92,7 @@ const AdminDashboard = () => {
                             <TabsTrigger value="nominees" className="gap-2"><Users size={16} /> Nominees</TabsTrigger>
                             <TabsTrigger value="reservations" className="gap-2"><Ticket size={16} /> Reservations</TabsTrigger>
                             <TabsTrigger value="events" className="gap-2"><Calendar size={16} /> Events</TabsTrigger>
+                            <TabsTrigger value="audit" className="gap-2"><ListChecks size={16} /> Audit Log</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="dashboard" className="animate-fade-in space-y-8">
@@ -160,6 +162,13 @@ const AdminDashboard = () => {
                         <TabsContent value="events" className="animate-fade-in">
                             <div className="bg-card/30 border border-white/10 rounded-xl p-6">
                                 <EventManager />
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="audit" className="animate-fade-in">
+                            <div className="bg-card/30 border border-white/10 rounded-xl p-6">
+                                <h2 className="text-xl font-display mb-6">Vote Audit Log</h2>
+                                <VoteAuditList />
                             </div>
                         </TabsContent>
                     </Tabs>

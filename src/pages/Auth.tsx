@@ -23,37 +23,39 @@ const Auth = () => {
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
-    
+
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
     }
-    
+
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
       newErrors.password = passwordResult.error.errors[0].message;
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user: authUser }, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        
+
         if (error) throw error;
-        
+
+        if (error) throw error;
+
         toast.success("Welcome back!", {
           description: "You're now logged in and can vote.",
         });
@@ -66,9 +68,9 @@ const Auth = () => {
             emailRedirectTo: `${window.location.origin}/`,
           },
         });
-        
+
         if (error) throw error;
-        
+
         toast.success("Account created!", {
           description: "You can now vote in all categories.",
         });
@@ -76,14 +78,14 @@ const Auth = () => {
       }
     } catch (error: any) {
       let message = error.message;
-      
+
       if (message.includes("User already registered")) {
         message = "This email is already registered. Please sign in instead.";
         setIsLogin(true);
       } else if (message.includes("Invalid login credentials")) {
         message = "Invalid email or password. Please try again.";
       }
-      
+
       toast.error(isLogin ? "Sign in failed" : "Sign up failed", {
         description: message,
       });
