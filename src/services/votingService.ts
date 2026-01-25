@@ -21,6 +21,15 @@ export interface DetailedVote extends Vote {
   };
 }
 
+export interface UserProfile {
+  id: string;
+  user_id?: string; // Optional because get_users_with_status returns 'id' which is the user_id
+  email: string | null;
+  created_at: string;
+  email_confirmed_at?: string | null;
+  last_sign_in_at?: string | null;
+}
+
 export const fetchUserVotes = async (userId: string): Promise<Record<string, string>> => {
   const { data, error } = await supabase
     .from("votes")
@@ -311,4 +320,65 @@ export const setVotingActive = async (active: boolean): Promise<{ success: boole
   }
 
   return { success: true };
+};
+
+// --- User Management ---
+
+export const fetchUsersWithStatus = async (): Promise<UserProfile[]> => {
+  // Use the RPC if available for full details including verification status
+  const { data, error } = await (supabase as any).rpc("get_users_with_status");
+
+  if (error) {
+    console.error("Error fetching users with status:", error);
+    // Fallback to basic profile fetch if RPC fails or doesn't exist yet
+    return fetchProfiles();
+  }
+
+  // Map RPC result to UserProfile
+  return data.map((u: any) => ({
+    id: u.id, // In auth.users, id IS the user_id
+    user_id: u.id,
+    email: u.email,
+    created_at: u.created_at,
+    email_confirmed_at: u.email_confirmed_at,
+    last_sign_in_at: u.last_sign_in_at
+  }));
+};
+
+export const fetchProfiles = async (): Promise<UserProfile[]> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching profiles:", error);
+    return [];
+  }
+
+  return data as UserProfile[];
+};
+
+export const deleteUser = async (userId: string): Promise<{ success: boolean; error?: string }> => {
+  const { error } = await (supabase as any).rpc("delete_user_and_data", {
+    target_user_id: userId,
+  });
+
+  if (error) {
+    console.error("Error deleting user:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
+
+export const deleteUnverifiedUsers = async (): Promise<{ success: boolean; count?: number; error?: string }> => {
+  const { data, error } = await (supabase as any).rpc("delete_unverified_users");
+
+  if (error) {
+    console.error("Error deleting unverified users:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, count: data };
 };

@@ -13,7 +13,8 @@ import NomineeManager from "@/components/admin/NomineeManager";
 import EventManager from "@/components/admin/EventManager";
 import ReservationList from "@/components/admin/ReservationList";
 import VoteAuditList from "@/components/admin/VoteAuditList";
-import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar, ListChecks, Power, PowerOff } from "lucide-react";
+import VoterManager from "@/components/admin/VoterManager";
+import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar, ListChecks, Power, PowerOff, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminDashboard = () => {
@@ -129,6 +130,7 @@ const AdminDashboard = () => {
                             <TabsTrigger value="nominees" className="gap-2"><Users size={16} /> Nominees</TabsTrigger>
                             <TabsTrigger value="reservations" className="gap-2"><Ticket size={16} /> Reservations</TabsTrigger>
                             <TabsTrigger value="events" className="gap-2"><Calendar size={16} /> Events</TabsTrigger>
+                            <TabsTrigger value="voters" className="gap-2"><UserMinus size={16} /> Voters</TabsTrigger>
                             <TabsTrigger value="audit" className="gap-2"><ListChecks size={16} /> Audit Log</TabsTrigger>
                         </TabsList>
 
@@ -199,6 +201,13 @@ const AdminDashboard = () => {
                         <TabsContent value="events" className="animate-fade-in">
                             <div className="bg-card/30 border border-white/10 rounded-xl p-6">
                                 <EventManager />
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="voters" className="animate-fade-in">
+                            <div className="bg-card/30 border border-white/10 rounded-xl p-6">
+                                <h2 className="text-xl font-display mb-6">User Management</h2>
+                                <VoterManager />
                             </div>
                         </TabsContent>
 
