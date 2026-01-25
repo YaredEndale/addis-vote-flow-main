@@ -6,14 +6,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fetchAllVotes, fetchCategories, fetchNominees, Vote, DbCategory, DbNominee } from "@/services/votingService";
+import { fetchAllVotes, fetchCategories, fetchNominees, Vote, DbCategory, DbNominee, isVotingActive, setVotingActive } from "@/services/votingService";
 import VoteStats from "@/components/admin/VoteStats";
 import CategoryManager from "@/components/admin/CategoryManager";
 import NomineeManager from "@/components/admin/NomineeManager";
 import EventManager from "@/components/admin/EventManager";
 import ReservationList from "@/components/admin/ReservationList";
 import VoteAuditList from "@/components/admin/VoteAuditList";
-import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar, ListChecks } from "lucide-react";
+import { Loader2, RefreshCw, ShieldAlert, BarChart3, Settings2, Users, Ticket, Calendar, ListChecks, Power, PowerOff } from "lucide-react";
+import { toast } from "sonner";
 
 const AdminDashboard = () => {
     const { user, loading: authLoading } = useAuth();
@@ -23,22 +24,40 @@ const AdminDashboard = () => {
     const [nominees, setNominees] = useState<DbNominee[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+    const [votingActive, setVotingActiveState] = useState(true);
+    const [togglingVoting, setTogglingVoting] = useState(false);
 
     // Dashboard, Categories, Nominees
     const [activeMainTab, setActiveMainTab] = useState("dashboard");
 
     const loadData = async () => {
         setLoading(true);
-        const [votesData, categoriesData, nomineesData] = await Promise.all([
+        const [votesData, categoriesData, nomineesData, isActive] = await Promise.all([
             fetchAllVotes(),
             fetchCategories(),
-            fetchNominees()
+            fetchNominees(),
+            isVotingActive()
         ]);
         setVotes(votesData);
         setCategories(categoriesData);
         setNominees(nomineesData);
+        setVotingActiveState(isActive);
         setLastUpdated(new Date());
         setLoading(false);
+    };
+
+    const handleToggleVoting = async () => {
+        setTogglingVoting(true);
+        const nextState = !votingActive;
+        const { success, error } = await setVotingActive(nextState);
+
+        if (success) {
+            setVotingActiveState(nextState);
+            toast.success(nextState ? "Voting has been started" : "Voting has been stopped");
+        } else {
+            toast.error("Failed to update voting status", { description: error });
+        }
+        setTogglingVoting(false);
     };
 
     useEffect(() => {
@@ -74,10 +93,28 @@ const AdminDashboard = () => {
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-3">
                             <div className="text-sm text-muted-foreground hidden md:block">
                                 Last updated: {lastUpdated.toLocaleTimeString()}
                             </div>
+
+                            <Button
+                                onClick={handleToggleVoting}
+                                disabled={togglingVoting}
+                                variant={votingActive ? "destructive" : "hero"}
+                                size="sm"
+                                className="min-w-[140px]"
+                            >
+                                {togglingVoting ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : votingActive ? (
+                                    <PowerOff className="w-4 h-4 mr-2" />
+                                ) : (
+                                    <Power className="w-4 h-4 mr-2" />
+                                )}
+                                {votingActive ? "Stop Voting" : "Start Voting"}
+                            </Button>
+
                             <Button onClick={loadData} disabled={loading} variant="outline" size="sm">
                                 <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                                 Refresh Data

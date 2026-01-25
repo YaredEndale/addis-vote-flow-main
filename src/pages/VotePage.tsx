@@ -7,8 +7,8 @@ import NomineeCard from "@/components/NomineeCard";
 import { Button } from "@/components/ui/button";
 import { useVotingStore } from "@/store/votingStore";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchCategories, fetchNominees, DbCategory, DbNominee } from "@/services/votingService";
-import { ArrowLeft, ArrowRight, Check, LogIn, Loader2 } from "lucide-react";
+import { fetchCategories, fetchNominees, DbCategory, DbNominee, isVotingActive } from "@/services/votingService";
+import { ArrowLeft, ArrowRight, Check, LogIn, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const VotePage = () => {
@@ -20,6 +20,7 @@ const VotePage = () => {
   const [categories, setCategories] = useState<DbCategory[]>([]);
   const [nominees, setNominees] = useState<DbNominee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [votingActive, setVotingActive] = useState(true);
 
   // DEBUG LOGGING
   useEffect(() => {
@@ -44,9 +45,14 @@ const VotePage = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      const [cats, noms] = await Promise.all([fetchCategories(), fetchNominees()]);
+      const [cats, noms, active] = await Promise.all([
+        fetchCategories(),
+        fetchNominees(),
+        isVotingActive()
+      ]);
       setCategories(cats);
       setNominees(noms);
+      setVotingActive(active);
       setLoading(false);
     };
     loadData();
@@ -137,6 +143,12 @@ const VotePage = () => {
   }
 
   const handleVote = (nomineeId: string) => {
+    if (!votingActive) {
+      toast.error("Voting is closed", {
+        description: "The voting period has ended or is temporarily suspended."
+      });
+      return;
+    }
     setSelectedNominee(nomineeId);
     setHasConfirmed(false);
   };
@@ -193,8 +205,19 @@ const VotePage = () => {
             Back to Categories
           </Link>
 
+          {/* Voting Closed Banner */}
+          {!votingActive && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 mb-6 flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              <div>
+                <p className="font-semibold text-destructive">Voting is currently closed</p>
+                <p className="text-sm text-destructive/80">You can still view the nominees, but submissions are disabled.</p>
+              </div>
+            </div>
+          )}
+
           {/* Not logged in banner */}
-          {!user && (
+          {user && votingActive && (
             <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <LogIn className="w-5 h-5 text-primary" />
@@ -255,13 +278,14 @@ const VotePage = () => {
                   isSelected={selectedNominee === nominee.id}
                   onVote={handleVote}
                   categoryId={category.id}
+                  disabled={!votingActive}
                 />
               </div>
             ))}
           </div>
 
           {/* Confirm Button */}
-          {selectedNominee && !hasConfirmed && (
+          {selectedNominee && !hasConfirmed && votingActive && (
             <div className="flex justify-center mb-8 animate-fade-in">
               <Button
                 variant="hero"

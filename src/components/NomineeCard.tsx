@@ -10,9 +10,10 @@ interface NomineeCardProps {
   isSelected: boolean;
   onVote: (nomineeId: string) => void;
   categoryId: string; // Added to construct share URL
+  disabled?: boolean;
 }
 
-const NomineeCard = ({ nominee, isSelected, onVote, categoryId }: NomineeCardProps) => {
+const NomineeCard = ({ nominee, isSelected, onVote, categoryId, disabled }: NomineeCardProps) => {
   const [showShareDialog, setShowShareDialog] = useState(false);
 
   return (
@@ -20,7 +21,7 @@ const NomineeCard = ({ nominee, isSelected, onVote, categoryId }: NomineeCardPro
       <Card
         variant="nominee"
         className={`relative overflow-hidden transition-all duration-300 ${isSelected ? "border-primary shadow-glow ring-2 ring-primary/30" : ""
-          }`}
+          } ${disabled && !isSelected ? "opacity-60 grayscale-[0.5]" : ""}`}
       >
         {isSelected && (
           <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-glow z-10 transition-transform hover:scale-105">
@@ -69,12 +70,15 @@ const NomineeCard = ({ nominee, isSelected, onVote, categoryId }: NomineeCardPro
             variant={isSelected ? "voted" : "vote"}
             className="w-full"
             onClick={() => onVote(nominee.id)}
+            disabled={disabled && !isSelected}
           >
             {isSelected ? (
               <>
                 <Check className="w-4 h-4 mr-2" />
                 Voted
               </>
+            ) : disabled ? (
+              "Voting closed"
             ) : (
               "Vote"
             )}

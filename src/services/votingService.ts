@@ -282,3 +282,33 @@ export const fetchDetailedVotes = async (): Promise<DetailedVote[]> => {
   // We need to manually handle the join result because of Supabase's type system
   return data as unknown as DetailedVote[];
 };
+
+// --- Settings ---
+
+export const isVotingActive = async (): Promise<boolean> => {
+  const { data, error } = await (supabase as any)
+    .from("settings")
+    .select("value")
+    .eq("key", "voting_active")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching voting status:", error);
+    return true; // Default to true if error
+  }
+
+  return data?.value === true;
+};
+
+export const setVotingActive = async (active: boolean): Promise<{ success: boolean; error?: string }> => {
+  const { error } = await (supabase as any)
+    .from("settings")
+    .upsert({ key: "voting_active", value: active });
+
+  if (error) {
+    console.error("Error updating voting status:", error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+};
